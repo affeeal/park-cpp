@@ -1,25 +1,18 @@
 #pragma once
 
+#include <fstream>
 #include <string>
 
 class NameBasics {
  public:
    NameBasics() : nconst_(""), primary_name_("") {}
-   NameBasics(std::string line);
+   NameBasics(const std::string& line);
    
-   void set_ncost(std::string nconst) {
-     nconst_ = nconst;
-   }
-   std::string get_ncost() const {
-     return nconst_;
-   }
-
-   void set_primary_name(std::string primary_name) {
-     primary_name_ = primary_name;
-   }
-   std::string get_primary_name() const {
-     return primary_name_;
-   }
+   const std::string& get_nconst() const;
+   const std::string& get_primary_name() const;
+   
+   static void FindAndWrite(std::ifstream& in,
+       const std::string& primary_name, NameBasics& name_basics);
  private:
 	std::string nconst_;
 	std::string primary_name_;

@@ -3,31 +3,18 @@
 #include <string>
 
 #include <name_basics.hpp>
-
-const std::string kUsage = "./main \"primary name\" name.basics.tsv "
-    "title.akas.tsv title.basics.tsv title.crew.tsv title.ratings.tsv";
+#include <title_crew.hpp>
 
 int main(int argc, char* argv[]) {
-	// input is supposed to be correct
-	if (argc != 7) {
-		std::cerr << "usage:" << std::endl;
-		std::cerr << '\t' << kUsage << std::endl;
-		return 1;
-	}
-	// processing name.basics.tsv
-	std::ifstream name_basics_file(argv[2]);
+  // input is supposed to be correct
+
+  // processing name.basics.tsv
+  std::ifstream name_basics_file(argv[2]);
   NameBasics name_basics;
-	if (name_basics_file.is_open()) {
-		std::string line;
-		while (std::getline(name_basics_file, line)) {
-			NameBasics nb(line);
-      if (nb.get_primary_name() == argv[1]) {
-          name_basics = nb;
-          break;
-      }
-		}
-		name_basics_file.close();
-	} else {
+  if (name_basics_file.is_open()) {
+    NameBasics::FindAndWrite(name_basics_file, argv[1], name_basics);
+    name_basics_file.close();
+  } else {
     std::cerr << "unable to open name.basics.tsv" << std::endl;
     return 1;
   }
@@ -35,6 +22,24 @@ int main(int argc, char* argv[]) {
     std::cerr << "primary name not found" << std::endl;
     return 1;
   }
+  
+  // processing title.crew.tsv
+  std::ifstream title_crew_file(argv[5]);
+  std::vector<TitleCrew> title_crew_entries;
+  if (title_crew_file.is_open()) {
+    TitleCrew::FindAndWrite(title_crew_file, name_basics.get_nconst(), 
+                            title_crew_entries);
+    title_crew_file.close();
+  } else {
+    std::cerr << "unable to open title.crew.tsv" << std::endl;
+    return 1;
+  }
+  if (title_crew_entries.empty()) {
+    std::cerr << "titles not found" << std::endl;
+    return 1;
+  }
+  
+  // processing title.akas.tsv
   // ...
 	return 0;
 }
