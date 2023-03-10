@@ -1,22 +1,21 @@
 #pragma once
 
-#include <fstream>
 #include <string>
 #include <vector>
 
 class TitleCrew {
  public:
-   TitleCrew() : tconst_("") {}
-   TitleCrew(const std::string& line);
+   static const size_t kColumnsCount;
+   
+   enum class Column {
+     kTconst = 0,
+     kDirectors,
+     kWriters
+   };
+   
+   TitleCrew(const std::vector<std::string>& columns);
 
-   const std::string& get_tconst() const;
-   const std::vector<std::string>& get_directors() const;
-
-   bool HasDirector(const std::string& nconst) const;
-
-   static void FindAndWrite(std::ifstream& in,
-       const std::string& nconst, std::vector<TitleCrew>& title_crew_entries);
+   const std::vector<std::string>& get_columns() const;
  private:
-   std::string tconst_;
-   std::vector<std::string> directors_;
+   std::vector<std::string> columns_;
 };

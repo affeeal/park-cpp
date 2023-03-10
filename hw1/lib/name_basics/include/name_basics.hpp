@@ -1,19 +1,24 @@
 #pragma once
 
-#include <fstream>
 #include <string>
+#include <vector>
 
 class NameBasics {
  public:
-   NameBasics() : nconst_(""), primary_name_("") {}
-   NameBasics(const std::string& line);
+   static const int kColumnsCount;
+
+   enum class Column {
+     kNconst = 0,
+     kPrimaryName,
+     kBirthYear,
+     kDeathYear,
+     kPrimaryProfession,
+     kKnownFowTitles,
+   };
    
-   const std::string& get_nconst() const;
-   const std::string& get_primary_name() const;
+   NameBasics(const std::vector<std::string>& columns);
    
-   static void FindAndWrite(std::ifstream& in,
-       const std::string& primary_name, NameBasics& name_basics);
+   const std::vector<std::string>& get_columns() const;
  private:
-	std::string nconst_;
-	std::string primary_name_;
+   std::vector<std::string> columns_;
 };

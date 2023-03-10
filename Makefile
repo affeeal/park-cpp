@@ -15,5 +15,4 @@ hw1:
 		hw1/.files/name.basics.tsv \
 		hw1/.files/title.akas.tsv \
 		hw1/.files/title.basics.tsv \
-		hw1/.files/title.crew.tsv \
-		title.ratings.tsv
+		hw1/.files/title.crew.tsv
