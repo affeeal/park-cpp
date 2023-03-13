@@ -3,6 +3,7 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <set>
 
 #include "name_basics.hpp"
 #include "title_akas.hpp"
@@ -23,38 +24,97 @@ void SplitColumns(
   }
 }
 
-std::unique_ptr<NameBasics> FindNameBasicsByPrimaryName(
+std::shared_ptr<NameBasics> SelectNameBasicsByPrimaryName(
     std::ifstream& name_basics_file,
     const std::string& primary_name) {
   std::string row;
+  
   while (std::getline(name_basics_file, row)) {
     std::vector<std::string> columns;
     SplitColumns(row, columns);
     assert(columns.size() == NameBasics::kColumnsCount);
+    
     if (columns[int(NameBasics::Column::kPrimaryName)] == primary_name)
-      return std::make_unique<NameBasics>(NameBasics(columns));
+      return std::make_shared<NameBasics>(NameBasics(columns));
   }
+  
   return nullptr;
 }
 
-void FindTitleCrewRowsByNconst(
+std::shared_ptr<TitleCrew> SelectTitleCrewByNconst(
     std::ifstream& title_crew_file,
-    std::ifstream& title_basics_file,
-    const std::string& nconst,
-    std::vector<TitleCrew>& title_crew_rows) {
+    const std::string& nconst) {
   std::string row;
+  
   while (std::getline(title_crew_file, row)) {
     std::vector<std::string> columns;
     SplitColumns(row, columns);
     assert(columns.size() == TitleCrew::kColumnsCount);
+    
     if (columns[int(TitleCrew::Column::kDirectors)].find(nconst)
-        == std::string::npos) continue;
-    // ...
+        != std::string::npos)
+      return std::make_shared<TitleCrew>(TitleCrew(columns));
   }
+  
+  return nullptr;
+}
+
+std::shared_ptr<TitleBasics> SelectTitleBasicsByTconst(
+    std::ifstream& title_basics_file,
+    const std::string& tconst) {
+  std::string row;
+  
+  while (std::getline(title_basics_file, row)) {
+    std::vector<std::string> columns;
+    SplitColumns(row, columns);
+    assert(columns.size() == TitleBasics::kColumnsCount);
+    
+    if (columns[int(TitleBasics::Column::kTconst)] == tconst)
+      return std::make_shared<TitleBasics>(TitleBasics(columns));
+  }
+  
+  return nullptr;
+}
+
+std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByTitleCrewRows (
+    std::ifstream& title_akas_file,
+    const std::set<std::shared_ptr<TitleCrew>> title_crew_rows) {
+  std::string row;
+  std::vector<TitleAkas> title_akas_rows;
+  
+  auto length = title_akas_file.tellg();
+  bool is_begin_found = false;
+  
+  while (std::getline(title_akas_file, row)) {
+    std::vector<std::string> columns;
+    SplitColumns(row, columns);
+    assert(columns.size() == TitleAkas::kColumnsCount);
+
+    bool is_tconst_matched = false;
+    for (const auto& title_crew : title_crew_rows) {
+      if (columns[int(TitleAkas::Column::kTitleId)] ==
+          title_crew->get_columns()[int(TitleCrew::Column::kTconst)]) {
+        is_tconst_matched = true;
+        break;
+      }
+    }
+
+    if (is_tconst_matched == true) {
+      if (is_begin_found == false)
+        is_begin_found = true;
+      title_akas_rows.push_back(TitleAkas(columns));
+      length = title_akas_file.tellg();
+    } else if (is_begin_found == true) {
+      title_akas_file.seekg(length, title_akas_file.beg);
+      return std::make_shared<std::vector<TitleAkas>>(title_akas_rows);
+    }    
+  }
+  
+  return nullptr;
 }
 
 int main(int argc, char* argv[]) {
-  // input is supposed to be correct
+  // TODO: настроить валидацию ввода
 
   // processing name.basics.tsv
   std::ifstream name_basics_file(argv[2]);
@@ -63,7 +123,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   
-  auto name_basics = FindNameBasicsByPrimaryName(name_basics_file, argv[1]);
+  auto name_basics = SelectNameBasicsByPrimaryName(name_basics_file, argv[1]);
   if (name_basics == nullptr) {
     std::cerr << "failed to find appropriate name.basics.tsv row" << std::endl;
     return 1;
@@ -71,28 +131,106 @@ int main(int argc, char* argv[]) {
   
   name_basics_file.close();
   
-  // processing title.crew.tsv
+  // processing title.crew.tsv, title.basics.tsv
   std::ifstream title_crew_file(argv[5]);
-  std::ifstream title_basics_file(argv[4]);
   if (!title_crew_file.is_open()) {
     std::cerr << "failed to open title.crew.tsv" << std::endl;
     return 1;
   }
+  
+  std::ifstream title_basics_file(argv[4]);
   if (!title_basics_file.is_open()) {
     std::cerr << "failed to open title.basics.tsv" << std::endl;
     return 1;
   }
 
-  std::vector<TitleCrew> title_crew_rows;
-  FindTitleCrewRowsByNconst(
-      title_crew_file, title_basics_file,
-      name_basics->get_columns()[int(NameBasics::Column::kNconst)],
-      title_crew_rows);
-
-  // ...
-
+  std::vector<std::shared_ptr<TitleCrew>> title_crew_rows;
+  std::vector<std::shared_ptr<TitleBasics>> title_basics_rows;
+  while (true) {
+    auto title_crew = SelectTitleCrewByNconst(
+        title_crew_file,
+        name_basics->get_columns()[int(NameBasics::Column::kNconst)]);
+    
+    if (title_crew == nullptr)
+      break;
+    
+    auto title_basics = SelectTitleBasicsByTconst(
+          title_basics_file,
+          title_crew->get_columns()[int(TitleCrew::Column::kTconst)]);
+    
+    if (title_basics->get_columns()[int(TitleBasics::Column::kIsAdult)] 
+        == "0") {
+      title_crew_rows.push_back(title_crew);
+      title_basics_rows.push_back(title_basics);
+    }
+  }
+  
   title_crew_file.close();
   title_basics_file.close();
+
+  // processing title.akas.tsv
+  std::ifstream title_akas_file(argv[3]);
+  if (!title_akas_file.is_open()) {
+    std::cerr << "failed to open title.akas.tsv" << std::endl;
+    return 1;
+  }
   
+  std::vector<std::shared_ptr<TitleAkas>> title_akas_rows(
+      title_crew_rows.size());
+
+  std::set<std::shared_ptr<TitleCrew>> title_crew_rows_interim;
+  for (const auto& title_crew : title_crew_rows)
+    title_crew_rows_interim.insert(title_crew);
+  
+  while (true) {
+    auto title_akas_rows_interim = SelectTitleAkasRowsByTitleCrewRows(
+        title_akas_file,
+        title_crew_rows_interim);
+    
+    if (title_akas_rows_interim == nullptr)
+      break;
+
+    std::shared_ptr<TitleAkas> title_akas_region_ru = nullptr;
+    for (const auto& title_akas : *title_akas_rows_interim) {
+      if (title_akas.get_columns()[int(TitleAkas::Column::kRegion)] == "RU") {
+        title_akas_region_ru = std::make_shared<TitleAkas>(title_akas);
+        break;
+      }
+    }
+    
+    assert(title_akas_rows_interim->size() >= 1);
+    const std::string& tconst = (*title_akas_rows_interim)[0].get_columns()
+      [int(TitleAkas::Column::kTitleId)];
+    
+    for (auto i = 0; i < title_akas_rows.size(); i++) {
+      if (title_crew_rows[i]->get_columns()[int(TitleCrew::Column::kTconst)]
+          == tconst) {
+        title_akas_rows[i] = title_akas_region_ru;
+        break;
+      }
+    }
+
+    for (auto& title_crew : title_crew_rows_interim) {
+      if (title_crew->get_columns()[int(TitleCrew::Column::kTconst)]
+          == tconst) {
+        title_crew_rows_interim.erase(title_crew);
+        break;
+      }
+    }
+  }
+  
+  title_akas_file.close();
+
+  for (auto i = 0; i < title_akas_rows.size(); i++)
+    if (title_akas_rows[i] != nullptr) {
+      std::cout
+        << title_akas_rows[i]->get_columns()[int(TitleAkas::Column::kTitle)]
+        << std::endl;
+    } else {
+      std::cout
+        << title_basics_rows[i]->get_columns()
+        [int(TitleBasics::Column::kPrimaryTitle)] << std::endl;
+    }
+
 	return 0;
 }
