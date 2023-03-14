@@ -1,9 +1,11 @@
 #include <cassert>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <limits>
 #include <memory>
 #include <set>
+#include <string>
 
 #include "name_basics.hpp"
 #include "title_akas.hpp"
@@ -76,13 +78,13 @@ std::shared_ptr<TitleBasics> SelectTitleBasicsByTconst(
   return nullptr;
 }
 
-std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByTitleCrewRows (
+std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByNumericTconstSet (
     std::ifstream& title_akas_file,
-    const std::set<std::shared_ptr<TitleCrew>> title_crew_rows) {
+    const std::set<int>& numeric_tconst_set) {
   std::string row;
   std::vector<TitleAkas> title_akas_rows;
   
-  auto length = title_akas_file.tellg();
+  auto position = title_akas_file.tellg();
   bool is_begin_found = false;
   
   while (std::getline(title_akas_file, row)) {
@@ -90,10 +92,14 @@ std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByTitleCrewRows (
     SplitColumns(row, columns);
     assert(columns.size() == TitleAkas::kColumnsCount);
 
+    int numeric_tconst = std::stoi(
+        columns[int(TitleAkas::Column::kTitleId)].substr(2));
+
     bool is_tconst_matched = false;
-    for (const auto& title_crew : title_crew_rows) {
-      if (columns[int(TitleAkas::Column::kTitleId)] ==
-          title_crew->get_columns()[int(TitleCrew::Column::kTconst)]) {
+    for (const auto& numeric_tconst_from_set : numeric_tconst_set) {
+      if (numeric_tconst < numeric_tconst_from_set) {
+        break;
+      } else if (numeric_tconst == numeric_tconst_from_set) {
         is_tconst_matched = true;
         break;
       }
@@ -103,9 +109,9 @@ std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByTitleCrewRows (
       if (is_begin_found == false)
         is_begin_found = true;
       title_akas_rows.push_back(TitleAkas(columns));
-      length = title_akas_file.tellg();
+      position = title_akas_file.tellg();
     } else if (is_begin_found == true) {
-      title_akas_file.seekg(length, title_akas_file.beg);
+      title_akas_file.seekg(position, title_akas_file.beg);
       return std::make_shared<std::vector<TitleAkas>>(title_akas_rows);
     }    
   }
@@ -174,18 +180,22 @@ int main(int argc, char* argv[]) {
     std::cerr << "failed to open title.akas.tsv" << std::endl;
     return 1;
   }
+
+  // УБРАТЬ
+  title_akas_file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+  std::set<int> numeric_tconst_set;
+  for (const auto& title_crew : title_crew_rows) {
+    numeric_tconst_set.insert(std::stoi(title_crew->get_columns()
+          [int(TitleCrew::Column::kTconst)].substr(2)));
+  }
   
   std::vector<std::shared_ptr<TitleAkas>> title_akas_rows(
       title_crew_rows.size());
-
-  std::set<std::shared_ptr<TitleCrew>> title_crew_rows_interim;
-  for (const auto& title_crew : title_crew_rows)
-    title_crew_rows_interim.insert(title_crew);
-  
   while (true) {
-    auto title_akas_rows_interim = SelectTitleAkasRowsByTitleCrewRows(
+    auto title_akas_rows_interim = SelectTitleAkasRowsByNumericTconstSet(
         title_akas_file,
-        title_crew_rows_interim);
+        numeric_tconst_set);
     
     if (title_akas_rows_interim == nullptr)
       break;
@@ -210,10 +220,10 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    for (auto& title_crew : title_crew_rows_interim) {
-      if (title_crew->get_columns()[int(TitleCrew::Column::kTconst)]
-          == tconst) {
-        title_crew_rows_interim.erase(title_crew);
+    const int numeric_tconst = std::stoi(tconst.substr(2));
+    for (const auto numeric_tconst_from_set : numeric_tconst_set) {
+      if (numeric_tconst == numeric_tconst_from_set) {
+        numeric_tconst_set.erase(numeric_tconst);
         break;
       }
     }
