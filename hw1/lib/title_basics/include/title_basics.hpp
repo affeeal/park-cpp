@@ -5,7 +5,6 @@
 
 class TitleBasics {
  public:
-   static const int kColumnsCount;
    enum class Column {
      kTconst = 0,
      kTitleType,

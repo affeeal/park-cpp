@@ -5,7 +5,6 @@
 
 class TitleAkas {
  public:
-   static const int kColumnsCount;
    enum class Column {
      kTitleId = 0,
      kOrdering,

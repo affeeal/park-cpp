@@ -11,7 +11,7 @@ build:
 
 hw1:
 	./build/hw1/hw1 \
-		--primary-name "Alfred Hitchcock" \
+		--primary-name "Guillermo del Toro" \
 		--name-basics-path hw1/.files/name.basics.tsv \
 		--title-akas-path hw1/.files/title.akas.tsv \
 		--title-basics-path hw1/.files/title.basics.tsv \

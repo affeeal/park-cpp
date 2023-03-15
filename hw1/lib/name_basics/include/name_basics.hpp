@@ -5,8 +5,6 @@
 
 class NameBasics {
  public:
-   static const int kColumnsCount;
-
    enum class Column {
      kNconst = 0,
      kPrimaryName,

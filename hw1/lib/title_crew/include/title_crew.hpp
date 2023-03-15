@@ -5,8 +5,6 @@
 
 class TitleCrew {
  public:
-   static const size_t kColumnsCount;
-   
    enum class Column {
      kTconst = 0,
      kDirectors,
