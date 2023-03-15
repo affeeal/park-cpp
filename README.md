@@ -1,2 +1,3 @@
-# park-cpp
-Homeworks on the course "Modern C++ programming", WEB, I term
+Ментор - Андрей Коленков.
+
+Выполнил Афанасьев Илья, WEB-13. Telegram: https://t.me/affeeal
