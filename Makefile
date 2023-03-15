@@ -11,8 +11,8 @@ build:
 
 hw1:
 	./build/hw1/hw1 \
-		"Alfred Hitchcock" \
-		hw1/.files/name.basics.tsv \
-		hw1/.files/title.akas.tsv \
-		hw1/.files/title.basics.tsv \
-		hw1/.files/title.crew.tsv
+		--primary-name "Alfred Hitchcock" \
+		--name-basics-path hw1/.files/name.basics.tsv \
+		--title-akas-path hw1/.files/title.akas.tsv \
+		--title-basics-path hw1/.files/title.basics.tsv \
+		--title-crew-path hw1/.files/title.crew.tsv

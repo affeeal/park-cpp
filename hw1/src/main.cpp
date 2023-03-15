@@ -1,4 +1,6 @@
 #include <cassert>
+#include <cstddef>
+#include <cstdlib>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -6,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "name_basics.hpp"
 #include "title_akas.hpp"
@@ -119,37 +122,125 @@ std::shared_ptr<std::vector<TitleAkas>> SelectTitleAkasRowsByNumericTconstSet (
   return nullptr;
 }
 
-int main(int argc, char* argv[]) {
-  // TODO: настроить валидацию ввода
+constexpr std::string_view name_basics_flag  { "--name-basics-path" };
+constexpr std::string_view title_akas_flag   { "--title-akas-path" };
+constexpr std::string_view title_basics_flag { "--title-basics-path" };
+constexpr std::string_view title_crew_flag   { "--title-crew-path" };
+constexpr std::string_view primary_name_flag { "--primary-name" };
 
-  // processing name.basics.tsv
-  std::ifstream name_basics_file(argv[2]);
+constexpr std::string_view name_basics_headers { 
+  "nconst\tprimaryName\tbirthYear\t"
+  "deathYear\tprimaryProfession\tknownForTitles" };
+
+constexpr std::string_view title_akas_headers { 
+  "titleId\tordering\ttitle\tregion\t"
+  "language\ttypes\tattributes\tisOriginalTitle" };
+
+constexpr std::string_view title_basics_headers { 
+  "tconst\ttitleType\tprimaryTitle\toriginalTitle\t"
+  "isAdult\tstartYear\tendYear\truntimeMinutes\tgenres" };
+
+constexpr std::string_view title_crew_headers { 
+  "tconst\tdirectors\twriters" };
+
+
+int main(int argc, char* argv[]) {
+  // checking command-line options count
+  if (argc != 11) {
+    std::cerr
+      << "Usage: ./hw1 <flags>" << std::endl
+      << "Flags:" << std::endl
+      << '\t' << name_basics_flag << "  <path-to-name-basics>" << std::endl
+      << '\t' << title_akas_flag << "   <path-to-title-akas>" << std::endl
+      << '\t' << title_basics_flag << " <path-to-title-basics>" << std::endl
+      << '\t' << title_crew_flag << "   <path-to-title-crew>" << std::endl
+      << '\t' << primary_name_flag << "      \"<primary-name>\"" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  int name_basics_index = 0;
+  int title_akas_index = 0;
+  int title_basics_index = 0;
+  int title_crew_index = 0;
+  int primary_name_index = 0;
+  
+  // identifying command-line options
+  for (auto i = 1; i < argc; i += 2) {
+    std::string_view arg { argv[i] };
+    if (arg == name_basics_flag && name_basics_index == 0) {
+      name_basics_index = i + 1;
+    } else if (arg == title_akas_flag && title_akas_index == 0) {
+      title_akas_index = i + 1;
+    } else if (arg == title_basics_flag && title_basics_index == 0) {
+      title_basics_index = i + 1;
+    } else if (arg == title_crew_flag && title_crew_index == 0) {
+      title_crew_index = i + 1;
+    } else if (arg == primary_name_flag && primary_name_index == 0) {
+      primary_name_index = i + 1;
+    } else {
+      std::cerr
+        << "unrecognised or repeated command-line option " << arg
+        << std::endl;
+      return EXIT_FAILURE;
+    }
+  }
+
+  // opening name.basics.tsv
+  std::ifstream name_basics_file(argv[name_basics_index]);
   if (!name_basics_file.is_open()) {
     std::cerr << "failed to open name.basics.tsv" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
+  }
+
+  // comparing name.basics.tsv headers
+  std::string row;
+  std::getline(name_basics_file, row);
+  if (row != name_basics_headers) {
+    std::cerr << "unexpected headers in name.basics.tsv" << std::endl;
+    return EXIT_FAILURE;
   }
   
-  auto name_basics = SelectNameBasicsByPrimaryName(name_basics_file, argv[1]);
+  // selecting appropriate name.basics.tsv row
+  auto name_basics = SelectNameBasicsByPrimaryName(
+      name_basics_file,
+      argv[primary_name_index]);
+  
   if (name_basics == nullptr) {
     std::cerr << "failed to find appropriate name.basics.tsv row" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
   }
   
   name_basics_file.close();
   
-  // processing title.crew.tsv, title.basics.tsv
-  std::ifstream title_crew_file(argv[5]);
+  // opening title.crew.tsv
+  std::ifstream title_crew_file(argv[title_crew_index]);
   if (!title_crew_file.is_open()) {
     std::cerr << "failed to open title.crew.tsv" << std::endl;
-    return 1;
-  }
-  
-  std::ifstream title_basics_file(argv[4]);
-  if (!title_basics_file.is_open()) {
-    std::cerr << "failed to open title.basics.tsv" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
   }
 
+  // comparing title.crew.tsv headers
+  std::getline(title_crew_file, row);
+  if (row != title_crew_headers) {
+    std::cerr << "unexpected headers in title.crew.tsv" << std::endl;
+    return EXIT_FAILURE;
+  }
+  
+  // opening title.basics.tsv
+  std::ifstream title_basics_file(argv[title_basics_index]);
+  if (!title_basics_file.is_open()) {
+    std::cerr << "failed to open title.basics.tsv" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // comparing title.basics.tsv headers
+  std::getline(title_basics_file, row);
+  if (row != title_basics_headers) {
+    std::cerr << "unexpected headers in title.basics.tsv" << std::endl;
+    return EXIT_FAILURE;
+  }
+
+  // selecting appropriate title.crew.tsv and title.basics.tsv rows
   std::vector<std::shared_ptr<TitleCrew>> title_crew_rows;
   std::vector<std::shared_ptr<TitleBasics>> title_basics_rows;
   while (true) {
@@ -174,22 +265,28 @@ int main(int argc, char* argv[]) {
   title_crew_file.close();
   title_basics_file.close();
 
-  // processing title.akas.tsv
-  std::ifstream title_akas_file(argv[3]);
+  // opening title.akas.tsv
+  std::ifstream title_akas_file(argv[title_akas_index]);
   if (!title_akas_file.is_open()) {
     std::cerr << "failed to open title.akas.tsv" << std::endl;
-    return 1;
+    return EXIT_FAILURE;
   }
 
-  // УБРАТЬ
-  title_akas_file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+  // comparing title.akas.tsv headers
+  std::getline(title_akas_file, row);
+  if (row != title_akas_headers) {
+    std::cerr << "unexpected title.akas.tsv headers" << std::endl;
+    return EXIT_FAILURE;
+  }
 
+  // set of numeric tconst to find title.akas.tsv rows by
   std::set<int> numeric_tconst_set;
   for (const auto& title_crew : title_crew_rows) {
     numeric_tconst_set.insert(std::stoi(title_crew->get_columns()
           [int(TitleCrew::Column::kTconst)].substr(2)));
   }
   
+  // selecting appropriate title.akas.tsv rows
   std::vector<std::shared_ptr<TitleAkas>> title_akas_rows(
       title_crew_rows.size());
   while (true) {
@@ -231,7 +328,8 @@ int main(int argc, char* argv[]) {
   
   title_akas_file.close();
 
-  for (auto i = 0; i < title_akas_rows.size(); i++)
+  // printing the result
+  for (auto i = 0; i < title_akas_rows.size(); i++) {
     if (title_akas_rows[i] != nullptr) {
       std::cout
         << title_akas_rows[i]->get_columns()[int(TitleAkas::Column::kTitle)]
@@ -241,6 +339,7 @@ int main(int argc, char* argv[]) {
         << title_basics_rows[i]->get_columns()
         [int(TitleBasics::Column::kPrimaryTitle)] << std::endl;
     }
+  }
 
 	return 0;
 }
