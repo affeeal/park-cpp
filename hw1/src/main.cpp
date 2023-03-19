@@ -78,19 +78,13 @@ int main(int argc, char* argv[]) {
   }
 
   std::ifstream name_basics_file(argv[name_basics_index]);
-  if (!name_basics_file.is_open()) {
-    std::cerr << "failed to open name.basics.tsv" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  std::string row;
-  std::getline(name_basics_file, row);
-  if (row != kNameBasicsColumns) {
-    std::cerr << "unexpected headers in name.basics.tsv" << std::endl;
+  if (bool ok = CheckFileAndCompareRows(
+        name_basics_file, "name.basics.tsv", kNameBasicsColumns);
+      ok == false) {
     name_basics_file.close();
     return EXIT_FAILURE;
   }
-  
+    
   auto name_basics = SelectNameBasicsByPrimaryName(
       name_basics_file,
       argv[primary_name_index]);
@@ -103,30 +97,17 @@ int main(int argc, char* argv[]) {
   }
   
   std::ifstream title_crew_file(argv[title_crew_index]);
-  if (!title_crew_file.is_open()) {
-    std::cerr << "failed to open title.crew.tsv" << std::endl;
+  if (bool ok = CheckFileAndCompareRows(
+        title_crew_file, "title.crew.tsv", kTitleCrewColumns);
+      ok == false) {
+    title_crew_file.close();
     return EXIT_FAILURE;
   }
   
   std::ifstream title_basics_file(argv[title_basics_index]);
-  if (!title_basics_file.is_open()) {
-    std::cerr << "failed to open title.basics.tsv" << std::endl;
-    title_crew_file.close();
-    return EXIT_FAILURE;
-  }
-
-  std::getline(title_crew_file, row);
-  if (row != kTitleCrewColumns) {
-    std::cerr << "unexpected headers in title.crew.tsv" << std::endl;
-    title_crew_file.close();
-    title_basics_file.close();
-    return EXIT_FAILURE;
-  }
-
-  std::getline(title_basics_file, row);
-  if (row != kTitleBasicsColumns) {
-    std::cerr << "unexpected headers in title.basics.tsv" << std::endl;
-    title_crew_file.close();
+  if (bool ok = CheckFileAndCompareRows(
+        title_basics_file, "title.basics.tsv", kTitleBasicsColumns);
+      ok == false) {
     title_basics_file.close();
     return EXIT_FAILURE;
   }
@@ -146,14 +127,9 @@ int main(int argc, char* argv[]) {
   title_basics_file.close();
 
   std::ifstream title_akas_file(argv[title_akas_index]);
-  if (!title_akas_file.is_open()) {
-    std::cerr << "failed to open title.akas.tsv" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  std::getline(title_akas_file, row);
-  if (row != kTitleAkasColumns) {
-    std::cerr << "unexpected title.akas.tsv headers" << std::endl;
+  if (bool ok = CheckFileAndCompareRows(
+        title_akas_file, "title.akas.tsv", kTitleAkasColumns);
+      ok == false) {
     title_akas_file.close();
     return EXIT_FAILURE;
   }

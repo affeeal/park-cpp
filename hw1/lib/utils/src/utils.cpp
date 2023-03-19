@@ -9,6 +9,25 @@
 #include "title_basics.hpp"
 #include "title_crew.hpp"
 
+bool CheckFileAndCompareRows(
+    std::ifstream& file,
+    const std::string_view name,
+    const std::string_view expected_row) {
+  if (!file.is_open()) {
+    std::cerr << "failed to open " << name << std::endl;
+    return false;
+  }
+
+  std::string row;
+  std::getline(file, row);
+  if (row != expected_row) {
+    std::cerr << "unexpected row in " << name << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
 void SplitColumns(
     const std::string& row,
     std::vector<std::string>& columns,

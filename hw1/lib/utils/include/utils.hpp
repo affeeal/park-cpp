@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <memory>
 #include <set>
 #include <string_view>
@@ -8,6 +9,11 @@
 #include "title_akas.hpp"
 #include "title_basics.hpp"
 #include "title_crew.hpp"
+
+bool CheckFileAndCompareRows(
+    std::ifstream& file,
+    const std::string_view name,
+    const std::string_view expected_row);
 
 void SplitColumns(const std::string& row,
     std::vector<std::string>& columns, int columns_count);
