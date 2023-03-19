@@ -1,24 +1,19 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "dataset.hpp"
 
-class TitleAkas {
+class TitleAkas : public Dataset {
  public:
-   enum class Column {
-     kTitleId = 0,
-     kOrdering,
-     kTitle,
-     kRegion,
-     kLanguage,
-     kTypes,
-     kAttributes,
-     kIsOriginalTitle
-   };
+  using Dataset::Dataset;
 
-   TitleAkas(const std::vector<std::string>& columns);
-
-   const std::vector<std::string>& get_columns() const;
- private:
-   std::vector<std::string> columns_;
+  enum class Column {
+    kTitleId = 0,
+    kOrdering,
+    kTitle,
+    kRegion,
+    kLanguage,
+    kTypes,
+    kAttributes,
+    kIsOriginalTitle
+  };
 };

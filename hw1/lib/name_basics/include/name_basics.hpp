@@ -1,22 +1,17 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "dataset.hpp"
 
-class NameBasics {
+class NameBasics : public Dataset {
  public:
-   enum class Column {
-     kNconst = 0,
-     kPrimaryName,
-     kBirthYear,
-     kDeathYear,
-     kPrimaryProfession,
-     kKnownFowTitles,
-   };
+  using Dataset::Dataset;
    
-   NameBasics(const std::vector<std::string>& columns);
-   
-   const std::vector<std::string>& get_columns() const;
- private:
-   std::vector<std::string> columns_;
+  enum class Column {
+    kNconst = 0,
+    kPrimaryName,
+    kBirthYear,
+    kDeathYear,
+    kPrimaryProfession,
+    kKnownFowTitles,
+  };
 };

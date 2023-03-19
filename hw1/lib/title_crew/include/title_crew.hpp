@@ -1,19 +1,14 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <dataset.hpp>
 
-class TitleCrew {
+class TitleCrew : public Dataset {
  public:
-   enum class Column {
-     kTconst = 0,
-     kDirectors,
-     kWriters
-   };
-   
-   TitleCrew(const std::vector<std::string>& columns);
+  using Dataset::Dataset;
 
-   const std::vector<std::string>& get_columns() const;
- private:
-   std::vector<std::string> columns_;
+  enum class Column {
+    kTconst = 0,
+    kDirectors,
+    kWriters
+  };
 };
