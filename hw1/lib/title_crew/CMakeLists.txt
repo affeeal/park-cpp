@@ -1,5 +1,5 @@
-add_library(title_crew src/title_crew.cpp)
+add_library(title_crew INTERFACE)
 
-target_include_directories(title_crew PUBLIC include)
+target_include_directories(title_crew INTERFACE include)
 
-target_link_libraries(title_crew dataset)
+target_link_libraries(title_crew INTERFACE dataset)
