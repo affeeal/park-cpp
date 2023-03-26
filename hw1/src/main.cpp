@@ -78,9 +78,8 @@ int main(int argc, char* argv[]) {
   }
 
   std::ifstream name_basics_file(argv[name_basics_index]);
-  if (bool ok = CheckFileAndCompareRows(
-        name_basics_file, "name.basics.tsv", kNameBasicsColumns);
-      ok == false) {
+  if (!CheckFileAndCompareRows(
+        name_basics_file, "name.basics.tsv", kNameBasicsColumns)) {
     name_basics_file.close();
     return EXIT_FAILURE;
   }
@@ -97,17 +96,16 @@ int main(int argc, char* argv[]) {
   }
   
   std::ifstream title_crew_file(argv[title_crew_index]);
-  if (bool ok = CheckFileAndCompareRows(
-        title_crew_file, "title.crew.tsv", kTitleCrewColumns);
-      ok == false) {
+  if (!CheckFileAndCompareRows(
+        title_crew_file, "title.crew.tsv", kTitleCrewColumns)) {
     title_crew_file.close();
     return EXIT_FAILURE;
   }
   
   std::ifstream title_basics_file(argv[title_basics_index]);
-  if (bool ok = CheckFileAndCompareRows(
-        title_basics_file, "title.basics.tsv", kTitleBasicsColumns);
-      ok == false) {
+  if (!CheckFileAndCompareRows(
+        title_basics_file, "title.basics.tsv", kTitleBasicsColumns)) {
+    title_crew_file.close();
     title_basics_file.close();
     return EXIT_FAILURE;
   }
@@ -127,9 +125,8 @@ int main(int argc, char* argv[]) {
   title_basics_file.close();
 
   std::ifstream title_akas_file(argv[title_akas_index]);
-  if (bool ok = CheckFileAndCompareRows(
-        title_akas_file, "title.akas.tsv", kTitleAkasColumns);
-      ok == false) {
+  if (!CheckFileAndCompareRows(
+        title_akas_file, "title.akas.tsv", kTitleAkasColumns)) {
     title_akas_file.close();
     return EXIT_FAILURE;
   }
