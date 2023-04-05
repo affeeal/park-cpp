@@ -1,9 +1,10 @@
 #include "cat.hpp"
-#include "ioperation.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <string>
+
+#include "ioperation.hpp"
 
 Cat::Cat(const std::string& filename)
   : filename_(filename), next_operation_(nullptr) {}

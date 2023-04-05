@@ -1,8 +1,14 @@
 #include "utils.hpp"
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+
+#include "ioperation.hpp"
+#include "cat.hpp"
+#include "echo.hpp"
+#include "head.hpp"
 
 bool IsKnownName(const std::string& token) {
   for (const auto& name : kNames) {
@@ -59,4 +65,16 @@ bool Parse(std::string_view line, std::vector<std::string>& tokens) {
   }
 
   return true;
+}
+
+std::unique_ptr<IOperation> CreateOperation(
+    int i, const std::vector<std::string>& tokens) {
+  if (tokens[i] == kNames[NameIndex::kCat])
+    return std::make_unique<Cat>(Cat(tokens[i + 1]));
+  else if (tokens[i] == kNames[NameIndex::kEcho])
+    return std::make_unique<Echo>(Echo(tokens[i + 1]));
+  else if (tokens[i] == kNames[NameIndex::kHead])
+    return std::make_unique<Head>(Head(tokens[i + 1]));
+  else
+   return nullptr;
 }

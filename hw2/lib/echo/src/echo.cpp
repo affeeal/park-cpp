@@ -1,6 +1,5 @@
 #include "echo.hpp"
 
-#include <algorithm>
 #include <iostream>
 
 #include "ioperation.hpp"

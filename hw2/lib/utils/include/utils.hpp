@@ -1,11 +1,10 @@
 #pragma once
 
-#include <string_view>
+#include <memory>
+#include <string>
 #include <vector>
 
-#include "cat.hpp"
-#include "echo.hpp"
-#include "head.hpp"
+#include "ioperation.hpp"
 
 const std::vector<std::string> kNames { "cat", "echo", "head" };
 enum NameIndex {
@@ -15,3 +14,6 @@ enum NameIndex {
 };
 
 bool Parse(std::string_view line, std::vector<std::string>& tokens);
+
+std::unique_ptr<IOperation> CreateOperation(
+    int i, const std::vector<std::string>& tokens);
