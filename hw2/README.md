@@ -32,7 +32,7 @@
 Результат вычисления получается вызовом метода `HandleEndOfInput` у первой
 операции. Пример (при вводе в терминале выражение с пробелами нужно обернуть,
 например, в одинарные кавычки):  
-`./text_processor 'echo 1 | cat file_1.txt | cat file_2.txt'`
+`./text_processor 'echo 1 | cat file_1.txt | cat file_2.txt'`  
 `1`  
 `<содержимое file_1.txt>`  
 `<содержимое file_2.txt>`
