@@ -14,4 +14,4 @@ build:
 
 hw2:
 	./build/hw2/hw2 \
-		'echo 1 | cat file_1.txt | cat file_2.txt'
+		'echo 1 | cat README.md | cat Makefile | head 8'

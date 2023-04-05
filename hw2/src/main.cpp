@@ -30,7 +30,8 @@ int main(int argc, char* argv[]) {
     first_operation = std::make_unique<Cat>(Cat(tokens[1]));
   else if (tokens[0] == kNames[NameIndex::kEcho])
     first_operation = std::make_unique<Echo>(Echo(tokens[1]));
-  // ...
+  else if (tokens[0] == kNames[NameIndex::kHead])
+    first_operation = std::make_unique<Head>(Head(tokens[1]));
 
   IOperation* previous_operation = first_operation.get();
   for (auto i = 2; i < tokens.size(); i += 2) {
@@ -40,8 +41,10 @@ int main(int argc, char* argv[]) {
     } else if (tokens[i] == kNames[NameIndex::kEcho]) {
       previous_operation->SetNextOperation(
           std::make_unique<Echo>(Echo(tokens[i + 1])));
+    } else if (tokens[i] == kNames[NameIndex::kHead]) {
+      previous_operation->SetNextOperation(
+          std::make_unique<Head>(Head(tokens[i + 1])));
     }
-    // ...
 
     previous_operation = previous_operation->GetNextOperation();
   }
