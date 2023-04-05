@@ -6,8 +6,11 @@ clean:
 generate:
 	cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -B build
 
+silent-build:
+	cmake --build build/
+
 build:
-	cmake --build build
+	@make -s silent-build 
 
 hw2:
 	./build/hw2/hw2 \
