@@ -10,4 +10,6 @@ class IOperation {
   virtual void SetNextOperation(std::unique_ptr<IOperation> next_operation) = 0;
   // для удобства к геттеру добавил сеттер.
   virtual IOperation* GetNextOperation() const = 0;
+
+  virtual ~IOperation() { };
 };
